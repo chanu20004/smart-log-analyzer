@@ -1,0 +1,16 @@
+2024-01-12 09:05:12 INFO Application started
+2024-01-12 09:15:45 ERROR Database connection failed
+
+2024-01-12 09:18:30 WARN Low memory detected
+random garbage text that is not a log line
+2024-01-12 ERROR missing_time_field
+2024-01-12 10:02:05 INFO User login successful
+2024-01-12 10:10:55 ERROR Exception occurred in payment module
+2024-01-12 25:10:30 ERROR Invalid hour value
+2024-01-12 11:01:18 ERROR Database connection failed
+2024-01-12 11:15:00 INFO User logout
+2024-01-12 11:45 ERROR Missing seconds
+2024-01-12 12:05:33 INFO Health check passed
+2024-01-12 12:25:44 ERROR Exception occurred in order service
+2024-01-12 12:55:21 ERROR Timeout while processing request
+14:23:45 ERROR Missing date
