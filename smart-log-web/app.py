@@ -18,7 +18,7 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
 
 # main.exe is one level above smart-log-web
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
-ANALYZER_PATH = os.path.join(PROJECT_ROOT, "main.exe")
+ANALYZER_PATH = os.path.join(PROJECT_ROOT, "main")
 
 # Create uploads folder if not exists
 if not os.path.exists(UPLOAD_FOLDER):
