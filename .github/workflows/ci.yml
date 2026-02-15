@@ -1,0 +1,27 @@
+name: C++ CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install Compiler
+      run: sudo apt-get update && sudo apt-get install -y g++
+
+    - name: Build Main Application
+      run: g++ -Wall main.cpp core.cpp -o main
+
+    - name: Build Tests
+      run: g++ -Wall tests/test_core.cpp core.cpp -o test
+
+    - name: Run Tests
+      run: ./test
