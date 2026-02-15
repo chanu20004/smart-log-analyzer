@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Smart Log Analyzer</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+    <body>
+        <div class="container">
+    <h1>Upload Log File</h1>
+    <form action="/" method="POST" enctype="multipart/form-data">
+    <input type="file" name="logfiles" accept=".txt,.log"  multiple required>
+    <button type="submit">Analyze</button>
+</form>
+</div>
+
+</body>
+</html>

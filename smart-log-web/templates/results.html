@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analysis Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<h1>Smart Log Analyzer Dashboard</h1>
+
+<!-- ================= CHART SECTION ================= -->
+
+<div class="chart-grid">
+
+    <div class="chart-card">
+        <h3>Error Trend</h3>
+        <div class="chart-container">
+            <canvas id="errorChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h3>Log Level Distribution</h3>
+        <div class="chart-container">
+            <canvas id="levelChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h3>Error Category Distribution</h3>
+        <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+</div>
+
+
+<!-- ================= TABLES ================= -->
+
+<h2>Errors Per Hour</h2>
+<table class="data-table">
+    <tr>
+        <th>Hour</th>
+        <th>Error Count</th>
+    </tr>
+    {% for hour, count in errors %}
+    <tr>
+        <td>{{ hour }}</td>
+        <td>{{ count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<h2>Log Level Summary</h2>
+<table class="data-table">
+    <tr>
+        <th>Level</th>
+        <th>Count</th>
+    </tr>
+    {% for level, count in levels %}
+    <tr>
+        <td>{{ level }}</td>
+        <td>{{ count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<h2>Error Category Summary</h2>
+<table class="data-table">
+    <tr>
+        <th>Category</th>
+        <th>Count</th>
+    </tr>
+    {% for cat, count in categories %}
+    <tr>
+        <td>{{ cat }}</td>
+        <td>{{ count }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+
+<!-- ================= ALERTS ================= -->
+
+<h2>Alerts</h2>
+{% if alerts %}
+<div class="alerts">
+    {% for alert in alerts %}
+        <p>{{ alert }}</p>
+    {% endfor %}
+</div>
+{% else %}
+<p>No alerts detected.</p>
+{% endif %}
+
+
+<!-- ================= BUTTONS ================= -->
+
+<div class="button-group">
+    <a href="/download/{{ filename }}" class="download-btn">
+        Download Report
+    </a>
+
+    <a href="/" class="back-btn">
+        Upload Another File
+    </a>
+</div>
+
+
+<!-- ================= CHART JS ================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const errorData = JSON.parse('{{ errors | tojson | safe }}');
+const levelData = JSON.parse('{{ levels | tojson | safe }}');
+const categoryData = JSON.parse('{{ categories | tojson | safe }}');
+
+// -------- Error Bar Chart --------
+
+const errorLabels = errorData.map(e => "Hour " + e[0]);
+const errorCounts = errorData.map(e => parseInt(e[1]));
+
+new Chart(document.getElementById('errorChart'), {
+    type: 'bar',
+    data: {
+        labels: errorLabels,
+        datasets: [{
+            label: 'Errors per Hour',
+            data: errorCounts,
+            backgroundColor: 'rgba(54,162,235,0.6)',
+            borderColor: 'rgba(54,162,235,1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+
+// -------- Log Level Pie --------
+
+const levelLabels = levelData.map(l => l[0]);
+const levelCounts = levelData.map(l => parseInt(l[1]));
+
+new Chart(document.getElementById('levelChart'), {
+    type: 'pie',
+    data: {
+        labels: levelLabels,
+        datasets: [{
+            data: levelCounts,
+            backgroundColor: [
+                "#007BFF",
+                "#28A745",
+                "#FFC107",
+                "#DC3545"
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+
+// -------- Category Pie --------
+
+const catLabels = categoryData.map(c => c[0]);
+const catCounts = categoryData.map(c => parseInt(c[1]));
+
+new Chart(document.getElementById('categoryChart'), {
+    type: 'pie',
+    data: {
+        labels: catLabels,
+        datasets: [{
+            data: catCounts,
+            backgroundColor: [
+                "#FF6384",
+                "#36A2EB",
+                "#FFCE56",
+                "#4BC0C0",
+                "#9966FF",
+                "#FF9F40"
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false
+    }
+});
+
+</script>
+
+</body>
+</html>

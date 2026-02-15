@@ -1,4 +1,19 @@
+# Executables
 *.exe
 *.out
-output.txt
-errorfile.txt
+
+# Object files
+*.o
+
+# Logs
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Uploads
+smart-log-web/uploads/
+
+# VS Code
+.vscode/

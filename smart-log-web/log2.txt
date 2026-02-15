@@ -1,0 +1,7 @@
+2024-01-12 14:00:00 ERROR Database failure
+2024-01-12 14:01:10 ERROR Database failure
+2024-01-12 14:02:05 ERROR Timeout occurred
+2024-01-12 14:03:20 ERROR Connection lost
+2024-01-12 14:04:00 ERROR Auth failure
+2024-01-12 15:10:15 INFO User login
+2024-01-12 15:15:22 WARN High CPU usage

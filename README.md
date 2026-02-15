@@ -1,102 +1,198 @@
-# Smart Log Analyzer (C++)
+# Smart Log Analyzer 🚀  
 
-Smart Log Analyzer is a configurable C++ program that analyzes log files,
-validates their format, performs time-based ERROR analysis, detects critical
-errors using external configuration, and generates structured summary reports.
+A production-style log analysis system built using **C++ (core processing engine)** and **Flask (web interface)**.
 
-This project demonstrates practical use of C++ STL, file handling, parsing,
-validation, and modular program design.
+It analyzes large log files efficiently and provides structured insights with visual dashboards and JSON API support.
 
 ---
 
-## Features
+## 📌 Problem Statement
 
-- Validates log format and time (HH:MM:SS)
-- Skips malformed or empty log lines
-- Counts ERROR occurrences per hour
-- Detects peak ERROR hour
-- Generates log level summary (INFO / WARN / ERROR)
-- Detects critical ERRORs using configurable keywords
-- Uses external configuration file (`critical.conf`)
-- Command-line configurable input and output files
+Modern applications generate massive log files.
 
----
+Manually identifying:
 
-## Project Structure
+- Error spikes  
+- Peak failure hours  
+- Log level distributions  
+- Root causes  
 
-SmartLogAnalyzer/
-│
-├── main.cpp # Core log analyzer implementation
-├── critical.conf # Critical error keywords (configurable)
-├── testfile.log # Sample log file for testing
-├── .gitignore # Ignored files (executables, outputs)
-├── README.md # Project documentation
+is time-consuming and inefficient.
 
+This project automates log analysis and provides:
+
+- ⚡ Real-time spike detection  
+- 📊 Structured error categorization  
+- 🔌 REST API for integration  
+- 📈 Interactive dashboard with charts  
 
 ---
 
-## Input Log Format
+## 🏗 System Architecture
 
-Each log line should follow this format:
+```
+User
+  │
+  ▼
+Flask Web Server
+  │
+  ▼
+File Merge Module
+  │
+  ▼
+C++ Analysis Engine
+  │
+  ▼
+JSON Output
+  │
+  ▼
+Dashboard (Charts + Tables)
+```
 
-YYYY-MM-DD HH:MM:SS LEVEL message
+### Flow Explanation
 
-
-Example:
-2024-01-12 10:15:45 ERROR Database connection failed
-
+1. User uploads one or more log files.
+2. Flask merges files into a single input stream.
+3. The C++ engine processes logs.
+4. Results are generated in structured JSON format.
+5. Flask renders charts and analytics in the UI.
 
 ---
 
-## Critical Keywords Configuration
+## 🧠 Spike Detection Algorithm
 
-The file `critical.conf` contains keywords used to detect critical ERRORs.
-Each line represents one keyword.
+The system uses a **Sliding Window (Queue-Based) Algorithm**.
 
-Example:
-failed
-timeout
-exception
-crash
+### Steps:
 
+1. Convert log timestamp to total seconds.
+2. Push timestamp into a queue.
+3. Remove timestamps older than 5-minute window.
+4. If queue size exceeds threshold → mark as spike.
 
-Matching is case-insensitive.
+### ⏱ Time Complexity
+
+- **O(N)**  
+Where `N` = number of log lines.
+
+Each log is processed once.
 
 ---
 
-## How to Compile and Run
+## ⚙ Tech Stack
 
-### Compile
-```bash
-g++ main.cpp -o loganalyzer
-Run
-./loganalyzer testfile.log output.txt
-(On Windows PowerShell use .\loganalyzer)
+### Core Engine
+- C++
+- STL (`unordered_map`, `queue`, `vector`)
 
-Output Report Includes
-ERROR count per hour
+### Web Layer
+- Python (Flask)
+- HTML + CSS
+- Chart.js
 
-Peak ERROR hour
+### API
+- REST Endpoint: `/api/analyze`
+- JSON structured output
 
-Log level summary
+---
 
-Critical ERROR summary
+## 📊 Features
 
-Number of skipped (invalid) log lines
+- Multi-file upload  
+- Automatic file merge before analysis  
+- Error-per-hour visualization  
+- Log level pie chart  
+- Error category distribution  
+- JSON mode support (`--json` flag`)  
+- Downloadable report  
+- REST API support  
 
-Concepts Used
-C++ STL (map, vector, string)
+---
 
-File handling (ifstream, ofstream)
+## 📡 REST API Usage
 
-String parsing (istringstream)
+### Endpoint
 
-Modular programming
+POST `/api/analyze`
 
-Command-line arguments
+### Request Type
 
-Input validation
+`form-data`  
+Key: `file` (log file)
 
-Author
-Chanukya (chanu20004)
-GitHub: https://github.com/chanu20004
+### Sample Response
+
+```json
+{
+  "errors_per_hour": {
+    "14": 12,
+    "15": 8
+  },
+  "log_levels": {
+    "ERROR": 20,
+    "INFO": 50,
+    "WARNING": 10
+  },
+  "categories": {
+    "Database": 8,
+    "Timeout": 6,
+    "Authentication": 3
+  }
+}
+```
+
+---
+
+## 🖥 How To Run
+
+### 1️⃣ Compile C++ Engine
+
+```
+g++ main.cpp -o main.exe
+```
+
+### 2️⃣ Run Flask Application
+
+```
+python app.py
+```
+
+### 3️⃣ Open in Browser
+
+```
+http://127.0.0.1:5000
+```
+
+---
+
+## 📝 Sample Log Input
+
+```
+2024-01-12 14:01:10 ERROR Database failure
+2024-01-12 14:02:05 ERROR Timeout occurred
+```
+
+---
+
+## 💡 Why This Project Stands Out
+
+- Demonstrates system design thinking
+- Combines C++ performance with Python web integration
+- Uses efficient O(N) algorithm
+- Includes API + UI + Visualization
+- Follows modular architecture
+
+---
+
+## 🔮 Future Improvements
+
+- Docker deployment  
+- Authentication system  
+- Real-time streaming log support  
+- Advanced anomaly detection  
+
+---
+
+### 👨‍💻 Author
+
+Chanukya Latchubukta
