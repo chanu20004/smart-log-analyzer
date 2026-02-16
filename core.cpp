@@ -1,10 +1,44 @@
 #include "core.h"
 
 #include <sstream>
+#include <algorithm>
+#include<iostream>
+
 #include <queue>
 #include <cctype>
 
 using namespace std;
+
+
+/* =========================
+   Helper Function (NEW)
+   ========================= */
+
+string trim(string s) {
+
+    // Remove trailing characters
+    while (!s.empty() &&
+          (s.back() == '\r' ||
+           s.back() == '\n' ||
+           s.back() == ' '  ||
+           s.back() == '\t')) {
+        s.pop_back();
+    }
+
+    // Remove leading characters
+    while (!s.empty() &&
+          (s.front() == ' ' ||
+           s.front() == '\t')) {
+        s.erase(s.begin());
+    }
+
+    return s;
+}
+
+
+/* =========================
+   Time Validation
+   ========================= */
 
 bool isValidTime(const string &time, int &hour,int &minute,int &second) {
 
@@ -28,6 +62,11 @@ bool isValidTime(const string &time, int &hour,int &minute,int &second) {
     return true;
 }
 
+
+/* =========================
+   Log Line Validation
+   ========================= */
+
 bool isValidLogLine(const string &line,
                     int &hour,
                     int &minute,
@@ -44,6 +83,10 @@ bool isValidLogLine(const string &line,
     if (!(iss >> date >> time >> level))
         return false;
 
+    level = trim(level);
+     level.erase(remove(level.begin(), level.end(), '\r'), level.end());
+// 🔥 FIX ADDED
+
     if (!isValidTime(time, hour, minute, second))
         return false;
 
@@ -52,8 +95,15 @@ bool isValidLogLine(const string &line,
     if (!message.empty() && message[0] == ' ')
         message.erase(0, 1);
 
+    message = trim(message);   // 🔥 SAFE CLEAN
+
     return true;
 }
+
+
+/* =========================
+   Main Processing
+   ========================= */
 
 void processLog(
     ifstream &inputfile,
@@ -79,11 +129,16 @@ void processLog(
 
         if (!isValidLogLine(line, hour,minute,second, level, message)) {
             skippedlines++;
+              cout << "Skipped line: [" << line << "]" << endl;
             continue;
         }
 
         for (char &c : level)
             c = toupper(c);
+            // Remove carriage return if exists
+if (!level.empty() && level.back() == '\r')
+    level.pop_back();
+
 
         levelCount[level]++;
 
@@ -100,7 +155,7 @@ void processLog(
                 errorwindow.pop();
             }
 
-            if(errorwindow.size() > (size_t)threshold && !spikeactive){
+            if(errorwindow.size() >=(size_t)threshold && !spikeactive){
 
                 ostringstream alert;
                 alert << "SPIKE DETECTED at time "
@@ -112,7 +167,7 @@ void processLog(
                 spikeactive = true;
             }
 
-            if(errorwindow.size() <= (size_t)threshold)
+            if(errorwindow.size() < (size_t)threshold)
                 spikeactive = false;
 
             string lower = message;
@@ -123,17 +178,26 @@ void processLog(
             bool matched = false;
 
             for(auto &p : keywordcategory){
-                if(lower.find(p.first) != string::npos){
-                    categoryCount[p.second]++;
-                    matched = true;
-                }
-            }
+    string cleanCategory = p.second;
+    cleanCategory.erase(remove(cleanCategory.begin(), cleanCategory.end(), '\r'), cleanCategory.end());
+
+    if(lower.find(p.first) != string::npos){
+        categoryCount[cleanCategory]++;
+        matched = true;
+    }
+}
+
 
             if(!matched)
                 categoryCount["UNKNOWN"]++;
         }
     }
 }
+
+
+/* =========================
+   Peak Hour
+   ========================= */
 
 int findPeakHour(const unordered_map<int,int> &errors, int &maxerrors) {
 
@@ -150,6 +214,11 @@ int findPeakHour(const unordered_map<int,int> &errors, int &maxerrors) {
     return peakhour;
 }
 
+
+/* =========================
+   Load Categories
+   ========================= */
+
 void loadKeywordCategories(const string& filename,
                            unordered_map<string,string> &keywordcategory){
 
@@ -157,6 +226,11 @@ void loadKeywordCategories(const string& filename,
     string line;
 
     while(getline(file,line)){
+
+        // Remove Windows carriage return if present
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
 
         if(line.empty())
             continue;
@@ -169,9 +243,23 @@ void loadKeywordCategories(const string& filename,
         string keyword = line.substr(0,pos);
         string category = line.substr(pos+1);
 
+        // Trim keyword
+        while(!keyword.empty() && isspace(keyword.back()))
+            keyword.pop_back();
+        while(!keyword.empty() && isspace(keyword.front()))
+            keyword.erase(keyword.begin());
+
+        // Trim category
+        while(!category.empty() && isspace(category.back()))
+            category.pop_back();
+        while(!category.empty() && isspace(category.front()))
+            category.erase(category.begin());
+
+        // Convert keyword to lowercase
         for(char &c : keyword)
             c = tolower(c);
 
         keywordcategory[keyword] = category;
     }
 }
+

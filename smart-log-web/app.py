@@ -1,3 +1,5 @@
+print("CORRECT APP FILE LOADED")
+
 import subprocess
 import os
 import time
@@ -10,17 +12,11 @@ app = Flask(__name__)
 # Proper Path Setup
 # -----------------------------------------
 
-# Folder where app.py exists (smart-log-web)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# uploads folder inside smart-log-web
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-
-# main.exe is one level above smart-log-web
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 ANALYZER_PATH = os.path.join(PROJECT_ROOT, "main")
 
-# Create uploads folder if not exists
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
@@ -51,7 +47,7 @@ def home():
 
         # Merge files
         timestamp = str(int(time.time()))
-        merged_filename = "merged_" + timestamp + ".txt"
+        merged_filename = f"merged_{timestamp}.txt"
         merged_path = os.path.join(UPLOAD_FOLDER, merged_filename)
 
         with open(merged_path, "w") as merged_file:
@@ -60,28 +56,65 @@ def home():
                     merged_file.write(f.read())
                     merged_file.write("\n")
 
-        # Run analyzer
-        output_filename = "output_" + timestamp + ".json"
+        # Prepare output path
+        output_filename = f"output_{timestamp}.json"
         output_path = os.path.join(UPLOAD_FOLDER, output_filename)
 
-        subprocess.run([ANALYZER_PATH, merged_path, output_path, "--json"])
 
-        # Load JSON
-        with open(output_path, "r") as f:
-            data = json.load(f)
+        
 
-        errors_per_hour = data.get("errors_per_hour", {})
+
+        # Run analyzer
+        result = subprocess.run(
+            [ANALYZER_PATH, merged_path, output_path, "--json"],
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode != 0:
+            return f"<h3>Analyzer Failed</h3><pre>{result.stderr}</pre>"
+
+        if not os.path.exists(output_path):
+            return "<h3>Output JSON file was not created.</h3>"
+
+        try:
+            with open(output_path, "r") as f:
+                data = json.load(f)
+        except Exception as e:
+            return f"<h3>JSON Error</h3><pre>{str(e)}</pre>"
+
+        # -----------------------------------------
+        # FORCE NORMALIZATION (CRITICAL FIX)
+        # -----------------------------------------
+
+        errors_per_hour = data.get("errors_per_hour", [])
         log_levels = data.get("log_levels", {})
         categories = data.get("categories", {})
 
-        return render_template(
-    "results.html",
-    errors=list(errors_per_hour.items()),
-    levels=list(log_levels.items()),
-    categories=list(categories.items()),
-    alerts=[],
-    filename=output_filename)
+        # Errors may already be list from C++
+        if isinstance(errors_per_hour, dict):
+            errors = [[k, v] for k, v in errors_per_hour.items()]
+        else:
+            errors = errors_per_hour
 
+        # ALWAYS convert dict → list of [key,value]
+        levels = [[k, v] for k, v in log_levels.items()]
+        categories_list = [[k, v] for k, v in categories.items()]
+        alerts=data.get("alerts",[])
+        skipped = data.get("skipped_lines", 0)
+
+
+
+
+        return render_template(
+            "results.html",
+            errors=errors,
+            levels=levels,
+            categories=categories_list,
+            alerts=alerts,
+            skipped=skipped,
+            filename=output_filename
+        )
 
     return render_template("index.html")
 
@@ -109,7 +142,7 @@ def api_analyze():
         saved_paths.append(upload_path)
 
     timestamp = str(int(time.time()))
-    merged_filename = "merged_" + timestamp + ".txt"
+    merged_filename = f"merged_{timestamp}.txt"
     merged_path = os.path.join(UPLOAD_FOLDER, merged_filename)
 
     with open(merged_path, "w") as merged_file:
@@ -118,13 +151,28 @@ def api_analyze():
                 merged_file.write(f.read())
                 merged_file.write("\n")
 
-    output_filename = "output_" + timestamp + ".json"
+    output_filename = f"output_{timestamp}.json"
     output_path = os.path.join(UPLOAD_FOLDER, output_filename)
 
-    subprocess.run([ANALYZER_PATH, merged_path, output_path, "--json"])
+    result = subprocess.run(
+        [ANALYZER_PATH, merged_path, output_path, "--json"],
+        capture_output=True,
+        text=True
+    )
 
-    with open(output_path, "r") as f:
-        data = json.load(f)
+    if result.returncode != 0:
+        return jsonify({"error": result.stderr}), 500
+
+    if not os.path.exists(output_path):
+        return jsonify({"error": "Output file not created"}), 500
+
+    try:
+        with open(output_path, "r") as f:
+            data = json.load(f)
+            print("DEBUG JSON:", data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
     return jsonify(data), 200
 
@@ -147,4 +195,6 @@ def download(filename):
 # -----------------------------------------
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+

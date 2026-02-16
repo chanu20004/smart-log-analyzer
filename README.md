@@ -1,4 +1,5 @@
-# Smart Log Analyzer 🚀  
+# Smart Log Analyzer 🚀 
+[![C++ CI Pipeline](https://github.com/chanu20004/smart-log-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/chanu20004/smart-log-analyzer/actions/workflows/ci.yml) 
 
 A production-style log analysis system built using **C++ (core processing engine)** and **Flask (web interface)**.
 

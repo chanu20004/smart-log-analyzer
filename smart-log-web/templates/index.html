@@ -1,16 +1,32 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title> Smart Log Analyzer</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    </head>
-    <body>
-        <div class="container">
-    <h1>Upload Log File</h1>
-    <form action="/" method="POST" enctype="multipart/form-data">
-    <input type="file" name="logfiles" accept=".txt,.log"  multiple required>
-    <button type="submit">Analyze</button>
-</form>
+<head>
+    <title>Smart Log Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- MAIN TITLE -->
+    <h1 class="main-title">Smart Log Analyzer 🚀</h1>
+    <p class="subtitle">
+        Analyze application logs, detect error spikes, 
+        identify categories, and visualize trends instantly.
+    </p>
+
+    <!-- UPLOAD SECTION -->
+    <div class="upload-card">
+        <h2>Upload Log Files</h2>
+
+        <form action="/" method="POST" enctype="multipart/form-data">
+            <input type="file" name="logfiles" accept=".txt,.log" multiple required>
+            <br><br>
+            <button type="submit">Analyze Logs</button>
+        </form>
+    </div>
+
 </div>
 
 </body>

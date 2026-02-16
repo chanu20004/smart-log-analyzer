@@ -44,4 +44,26 @@ int main() {
 
     cout << "All tests passed successfully.\n";
     return 0;
+    int h, m, s;
+
+// Valid time
+assert(isValidTime("14:30:45", h, m, s) == true);
+
+// Invalid hour
+assert(isValidTime("25:10:00", h, m, s) == false);
+
+// Invalid format
+assert(isValidTime("14-30-45", h, m, s) == false);
+string level, message;
+
+// Valid log
+assert(isValidLogLine(
+    "2024-01-12 10:15:30 ERROR Database failed",
+    h, m, s, level, message) == true);
+
+// Invalid log (missing time)
+assert(isValidLogLine(
+    "2024-01-12 ERROR Missing time",
+    h, m, s, level, message) == false);
+
 }

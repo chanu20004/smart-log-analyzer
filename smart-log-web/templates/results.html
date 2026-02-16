@@ -1,130 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Analysis Results</title>
+    <title>Smart Log Analyzer Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
 
-<h1>Smart Log Analyzer Dashboard</h1>
+<div class="container">
 
-<!-- ================= CHART SECTION ================= -->
+    <h1>Smart Log Analyzer Dashboard</h1>
 
-<div class="chart-grid">
+    <div class="chart-grid">
 
-    <div class="chart-card">
-        <h3>Error Trend</h3>
-        <div class="chart-container">
-            <canvas id="errorChart"></canvas>
+        <div class="chart-card">
+            <h3>Error Trend (Per Hour)</h3>
+            <div class="chart-container">
+                <canvas id="errorChart"></canvas>
+            </div>
         </div>
+
+        <div class="chart-card">
+            <h3>Log Level Distribution</h3>
+            <div class="chart-container">
+                <canvas id="levelChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>Error Category Distribution</h3>
+            <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
     </div>
 
-    <div class="chart-card">
-        <h3>Log Level Distribution</h3>
-        <div class="chart-container">
-            <canvas id="levelChart"></canvas>
-        </div>
-    </div>
+    <!-- ================= TABLES ================= -->
 
-    <div class="chart-card">
-        <h3>Error Category Distribution</h3>
-        <div class="chart-container">
-            <canvas id="categoryChart"></canvas>
+    <h2>Errors Per Hour</h2>
+    <table class="data-table">
+        <tr>
+            <th>Hour</th>
+            <th>Error Count</th>
+        </tr>
+        {% for item in errors %}
+        <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Log Level Summary</h2>
+    <table class="data-table">
+        <tr>
+            <th>Level</th>
+            <th>Count</th>
+        </tr>
+        {% for item in levels %}
+        <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Error Category Summary</h2>
+    <table class="data-table">
+        <tr>
+            <th>Category</th>
+            <th>Count</th>
+        </tr>
+        {% for item in categories %}
+        <tr>
+            <td>{{ item[0] }}</td>
+            <td>{{ item[1] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- ================= ALERTS ================= -->
+
+    <h2>Alerts</h2>
+    {% if alerts %}
+        <div class="alerts">
+            {% for alert in alerts %}
+                <p>{{ alert }}</p>
+            {% endfor %}
         </div>
+    {% else %}
+        <p>No alerts detected.</p>
+    {% endif %}
+
+    <!-- ================= SKIPPED LINES ================= -->
+
+<h2>Skipped Lines</h2>
+<p>{{ skipped }}</p>
+
+
+    <!-- ================= BUTTONS ================= -->
+
+    <div class="button-group">
+        <a href="/download/{{ filename }}" class="download-btn">
+            Download Report
+        </a>
+
+        <a href="/" class="back-btn">
+            Upload Another File
+        </a>
     </div>
 
 </div>
-
-
-<!-- ================= TABLES ================= -->
-
-<h2>Errors Per Hour</h2>
-<table class="data-table">
-    <tr>
-        <th>Hour</th>
-        <th>Error Count</th>
-    </tr>
-    {% for hour, count in errors %}
-    <tr>
-        <td>{{ hour }}</td>
-        <td>{{ count }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-
-<h2>Log Level Summary</h2>
-<table class="data-table">
-    <tr>
-        <th>Level</th>
-        <th>Count</th>
-    </tr>
-    {% for level, count in levels %}
-    <tr>
-        <td>{{ level }}</td>
-        <td>{{ count }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-
-<h2>Error Category Summary</h2>
-<table class="data-table">
-    <tr>
-        <th>Category</th>
-        <th>Count</th>
-    </tr>
-    {% for cat, count in categories %}
-    <tr>
-        <td>{{ cat }}</td>
-        <td>{{ count }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
-
-<!-- ================= ALERTS ================= -->
-
-<h2>Alerts</h2>
-{% if alerts %}
-<div class="alerts">
-    {% for alert in alerts %}
-        <p>{{ alert }}</p>
-    {% endfor %}
-</div>
-{% else %}
-<p>No alerts detected.</p>
-{% endif %}
-
-
-<!-- ================= BUTTONS ================= -->
-
-<div class="button-group">
-    <a href="/download/{{ filename }}" class="download-btn">
-        Download Report
-    </a>
-
-    <a href="/" class="back-btn">
-        Upload Another File
-    </a>
-</div>
-
-
-<!-- ================= CHART JS ================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
+const errorData = {{ errors | tojson | safe }};
+const levelData = {{ levels | tojson | safe }};
+const categoryData = {{ categories | tojson | safe }};
 
-const errorData = JSON.parse('{{ errors | tojson | safe }}');
-const levelData = JSON.parse('{{ levels | tojson | safe }}');
-const categoryData = JSON.parse('{{ categories | tojson | safe }}');
-
-// -------- Error Bar Chart --------
-
+// -------- ERROR BAR CHART --------
 const errorLabels = errorData.map(e => "Hour " + e[0]);
-const errorCounts = errorData.map(e => parseInt(e[1]));
+const errorCounts = errorData.map(e => Number(e[1]));
 
 new Chart(document.getElementById('errorChart'), {
     type: 'bar',
@@ -132,75 +130,42 @@ new Chart(document.getElementById('errorChart'), {
         labels: errorLabels,
         datasets: [{
             label: 'Errors per Hour',
-            data: errorCounts,
-            backgroundColor: 'rgba(54,162,235,0.6)',
-            borderColor: 'rgba(54,162,235,1)',
-            borderWidth: 1
+            data: errorCounts
         }]
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: { beginAtZero: true }
-        }
+        maintainAspectRatio: false
     }
 });
 
-
-// -------- Log Level Pie --------
-
+// -------- LOG LEVEL PIE --------
 const levelLabels = levelData.map(l => l[0]);
-const levelCounts = levelData.map(l => parseInt(l[1]));
+const levelCounts = levelData.map(l => Number(l[1]));
 
 new Chart(document.getElementById('levelChart'), {
     type: 'pie',
     data: {
         labels: levelLabels,
         datasets: [{
-            data: levelCounts,
-            backgroundColor: [
-                "#007BFF",
-                "#28A745",
-                "#FFC107",
-                "#DC3545"
-            ]
+            data: levelCounts
         }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
     }
 });
 
-
-// -------- Category Pie --------
-
+// -------- CATEGORY PIE --------
 const catLabels = categoryData.map(c => c[0]);
-const catCounts = categoryData.map(c => parseInt(c[1]));
+const catCounts = categoryData.map(c => Number(c[1]));
 
 new Chart(document.getElementById('categoryChart'), {
     type: 'pie',
     data: {
         labels: catLabels,
         datasets: [{
-            data: catCounts,
-            backgroundColor: [
-                "#FF6384",
-                "#36A2EB",
-                "#FFCE56",
-                "#4BC0C0",
-                "#9966FF",
-                "#FF9F40"
-            ]
+            data: catCounts
         }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false
     }
 });
-
 </script>
 
 </body>
