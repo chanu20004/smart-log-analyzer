@@ -6,7 +6,12 @@ import time
 import json
 from flask import Flask, render_template, request, send_file, jsonify
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder="templates",
+    static_folder="static"
+)
+
 
 # -----------------------------------------
 # Proper Path Setup
@@ -102,8 +107,6 @@ def home():
         categories_list = [[k, v] for k, v in categories.items()]
         alerts=data.get("alerts",[])
         skipped = data.get("skipped_lines", 0)
-
-
 
 
         return render_template(
