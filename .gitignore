@@ -17,3 +17,8 @@ smart-log-web/uploads/
 
 # VS Code
 .vscode/
+
+*.exe
+test.json
+cat
+
