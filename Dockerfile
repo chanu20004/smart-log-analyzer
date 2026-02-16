@@ -1,6 +1,5 @@
 FROM python:3.11
 
-# Install g++ and json library
 RUN apt-get update && apt-get install -y \
     g++ \
     build-essential \
@@ -8,18 +7,16 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy all project files
+# Copy entire project
 COPY . .
 
-# Compile C++ analyzer
-RUN g++ -std=c++17 test_main.cpp core.cpp -o main
-
+# Compile C++
+RUN rm -f main && g++ -std=c++17 test_main.cpp core.cpp -o main
 
 # Install Flask
 RUN pip install flask
 
-# Expose port
 EXPOSE 5000
 
-# Run Flask app
+# IMPORTANT CHANGE HERE
 CMD ["python", "smart-log-web/app.py"]
